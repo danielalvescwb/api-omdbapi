@@ -31,5 +31,6 @@ interface IGithubUserInfo {
   following: number;
   created_at: Date;
   updated_at: Date;
+  refresh_token?: string;
 }
 export { IGithubUserInfo };

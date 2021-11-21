@@ -75,6 +75,8 @@ export class OAuthEntity {
   created_at: Date;
   @Column({ type: 'timestamp', nullable: true })
   updated_at: Date;
+  @Column({ type: 'text', nullable: true })
+  refresh_token?: string;
 
   @ManyToMany(() => MovieEntity, (oAuth) => oAuth.favoritesInMovies, {
     createForeignKeyConstraints: false,

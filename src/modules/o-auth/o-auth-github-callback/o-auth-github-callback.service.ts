@@ -5,13 +5,14 @@ import { Repository } from 'typeorm';
 import { OAuthEntity } from '../entities/o-auth.entity';
 import { IAccessTokenResponse } from '../interfaces/IAccessTokenResponse';
 import { IGithubUserInfo } from '../interfaces/IGithubUserInfo';
-import { sign } from 'jsonwebtoken';
+import { GenerateJwtAndRefreshTokenService } from 'src/modules/auth/generate-jwt-and-refresh-token/generate-jwt-and-refresh-token.service';
 
 @Injectable()
 export class OAuthGithubCallbackService {
   constructor(
     @InjectRepository(OAuthEntity)
     private readonly oAuthRepository: Repository<OAuthEntity>,
+    private readonly generateJwtAndRefreshTokenService: GenerateJwtAndRefreshTokenService,
   ) {}
   async exec(code: string) {
     try {
@@ -31,6 +32,7 @@ export class OAuthGithubCallbackService {
           },
         },
       );
+
       const { data: githubUserInfo } = await axios.get<IGithubUserInfo>(
         'https://api.github.com/user',
         {
@@ -41,26 +43,26 @@ export class OAuthGithubCallbackService {
       );
 
       const { name, avatar_url, id, email } = githubUserInfo;
-      const user = await this.oAuthRepository.findOne({ where: { id } });
+      let user = await this.oAuthRepository.findOne({ where: { id } });
+
+      const { refreshToken, token } =
+        this.generateJwtAndRefreshTokenService.execute({
+          email: email,
+          payload: {
+            id,
+            name,
+            avatar_url,
+          },
+        });
+      githubUserInfo.refresh_token = refreshToken;
 
       if (!user) {
-        await this.oAuthRepository.save(githubUserInfo);
+        user = await this.oAuthRepository.save(githubUserInfo);
       }
 
-      const token = sign(
-        {
-          name,
-          avatar_url,
-          id,
-        },
-        process.env.JWT_SECRET,
-        {
-          subject: email,
-          expiresIn: '1d',
-        },
-      );
       return {
         token,
+        refreshToken,
         name,
         avatar_url,
         id,

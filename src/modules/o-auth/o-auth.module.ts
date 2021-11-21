@@ -7,11 +7,16 @@ import {
 import { OAuthGithubSignInModule } from './o-auth-github-sign-in/o-auth-github-sign-in.module';
 import { OAuthGithubCallbackModule } from './o-auth-github-callback/o-auth-github-callback.module';
 import { OAuthCheckMiddleware } from './o-auth-check.middleware';
+import { OAuthGithubMeModule } from './o-auth-github-me/o-auth-github-me.module';
 
 @Module({
   controllers: [],
   providers: [],
-  imports: [OAuthGithubSignInModule, OAuthGithubCallbackModule],
+  imports: [
+    OAuthGithubSignInModule,
+    OAuthGithubCallbackModule,
+    OAuthGithubMeModule,
+  ],
 })
 export class OAuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
@@ -26,6 +31,10 @@ export class OAuthModule implements NestModule {
       },
       {
         path: '*favorites-show',
+        method: RequestMethod.GET,
+      },
+      {
+        path: 'o-auth-github-me',
         method: RequestMethod.GET,
       },
     );
