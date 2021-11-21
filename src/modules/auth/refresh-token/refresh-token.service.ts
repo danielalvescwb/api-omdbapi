@@ -30,7 +30,6 @@ export class RefreshTokenService {
 
     const user = await this.usersRepository.findOne({
       where: { email: sub },
-      relations: ['permissions', 'roles'],
       withDeleted: true,
     });
 
@@ -46,6 +45,7 @@ export class RefreshTokenService {
         error: true,
         code: 'credentials.invalid',
         message: 'E-mail or refreshToken incorrect..',
+        action: 'logout',
       });
     }
 
@@ -59,9 +59,10 @@ export class RefreshTokenService {
         },
       });
 
-    await this.usersRepository.update(user.id, {
+    await this.usersRepository.update(user.primary_id, {
       refresh_token: refreshToken,
     });
+    console.log(user);
 
     return {
       token,

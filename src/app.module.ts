@@ -5,6 +5,7 @@ import { MoviesListModule } from './modules/movies-list/movies-list.module';
 import { OAuthModule } from './modules/o-auth/o-auth.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { RedisCacheModule } from './cache/redis-cache/redis-cache.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { RedisCacheModule } from './cache/redis-cache/redis-cache.module';
     OAuthModule,
     FavoritesModule,
     RedisCacheModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

@@ -1,16 +1,9 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
-import { Repository } from 'typeorm';
-import { OAuthEntity } from '../o-auth/entities/o-auth.entity';
 
 @Injectable()
 export class CheckAuthMiddleware implements NestMiddleware {
-  constructor(
-    @InjectRepository(OAuthEntity)
-    private usersRepository: Repository<OAuthEntity>,
-  ) {}
   async use(req: Request, res: Response, next: NextFunction) {
     console.log('########## CheckAuthMiddleware');
 
@@ -50,12 +43,6 @@ export class CheckAuthMiddleware implements NestMiddleware {
           {},
         ) as DecodedToken;
       }
-
-      // const user = await this.usersRepository.findOne({
-      //   where: { email: decoded.sub },
-      //   withDeleted: true,
-      //   relations: ['permissions', 'roles'],
-      // });
 
       req.tokenDecoded = decoded;
 

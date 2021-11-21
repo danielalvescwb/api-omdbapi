@@ -37,6 +37,10 @@ export class OAuthModule implements NestModule {
         path: 'o-auth-github-me',
         method: RequestMethod.GET,
       },
+      {
+        path: 'refresh-token',
+        method: RequestMethod.POST,
+      },
     );
   }
 }

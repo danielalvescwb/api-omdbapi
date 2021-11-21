@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { RefreshTokenDTO } from './refresh-token.dto';
 import { RefreshTokenService } from './refresh-token.service';
 
-@Controller('api/v1/refresh-token')
+@Controller('refresh-token')
 export class RefreshTokenController {
   constructor(private refreshTokenService: RefreshTokenService) {}
 
@@ -11,10 +11,10 @@ export class RefreshTokenController {
   async handle(@Req() req: Request, @Body() refreshTokenDTO: RefreshTokenDTO) {
     console.log('########## RefreshTokenController');
     const {
-      tokenDecoded: { id },
+      tokenDecoded: { sub },
     } = req;
     return await this.refreshTokenService.exec({
-      id,
+      sub,
       refreshTokenDTO,
     });
   }
