@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Repository } from 'typeorm';
@@ -14,56 +14,64 @@ export class OAuthGithubCallbackService {
     private readonly oAuthRepository: Repository<OAuthEntity>,
   ) {}
   async exec(code: string) {
-    const {
-      data: { access_token },
-    } = await axios.post<IAccessTokenResponse>(
-      'https://github.com/login/oauth/access_token',
-      null,
-      {
-        params: {
-          client_id: process.env.GITHUB_OAUTH_PUBLIC_CLIENT_ID,
-          client_secret: process.env.GITHUB_OAUTH_SECRET_CLIENT_ID,
-          code,
+    try {
+      const {
+        data: { access_token },
+      } = await axios.post<IAccessTokenResponse>(
+        'https://github.com/login/oauth/access_token',
+        null,
+        {
+          params: {
+            client_id: process.env.GITHUB_OAUTH_PUBLIC_CLIENT_ID,
+            client_secret: process.env.GITHUB_OAUTH_SECRET_CLIENT_ID,
+            code,
+          },
+          headers: {
+            Accept: 'application/json',
+          },
         },
-        headers: {
-          Accept: 'application/json',
+      );
+      const { data: githubUserInfo } = await axios.get<IGithubUserInfo>(
+        'https://api.github.com/user',
+        {
+          headers: {
+            authorization: `Bearer ${access_token}`,
+          },
         },
-      },
-    );
-    const { data: githubUserInfo } = await axios.get<IGithubUserInfo>(
-      'https://api.github.com/user',
-      {
-        headers: {
-          authorization: `Bearer ${access_token}`,
+      );
+
+      const { name, avatar_url, id, email } = githubUserInfo;
+      const user = await this.oAuthRepository.findOne({ where: { id } });
+
+      if (!user) {
+        await this.oAuthRepository.save(githubUserInfo);
+      }
+
+      const token = sign(
+        {
+          name,
+          avatar_url,
+          id,
         },
-      },
-    );
-
-    const { name, avatar_url, id, email } = githubUserInfo;
-    const user = await this.oAuthRepository.findOne({ where: { id } });
-
-    if (!user) {
-      await this.oAuthRepository.save(githubUserInfo);
-    }
-
-    const token = sign(
-      {
+        process.env.JWT_SECRET,
+        {
+          subject: email,
+          expiresIn: '1d',
+        },
+      );
+      return {
+        token,
         name,
         avatar_url,
         id,
-      },
-      process.env.JWT_SECRET,
-      {
-        subject: email,
-        expiresIn: '1d',
-      },
-    );
-    return {
-      token,
-      name,
-      avatar_url,
-      id,
-      email,
-    };
+        email,
+      };
+    } catch (error) {
+      throw new BadRequestException({
+        error: true,
+        code: 'credential.invalid',
+        message: 'Error on request token github',
+      });
+    }
   }
 }
