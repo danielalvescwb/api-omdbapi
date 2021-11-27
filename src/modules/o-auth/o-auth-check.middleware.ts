@@ -5,7 +5,8 @@ import { verify } from 'jsonwebtoken';
 @Injectable()
 export class OAuthCheckMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    console.log('########## CheckAuthMiddleware');
+    console.log('########## OAuthCheckMiddleware');
+
     const { authorization } = req.headers;
 
     if (!authorization) {
@@ -44,9 +45,10 @@ export class OAuthCheckMiddleware implements NestMiddleware {
       }
 
       req.tokenDecoded = decoded;
-
       return next();
     } catch (err) {
+      console.log(err);
+
       if (err.name === 'TokenExpiredError') {
         return res.status(401).json({
           error: true,
