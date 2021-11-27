@@ -21,7 +21,7 @@ export class GenerateJwtAndRefreshTokenService {
     try {
       token = sign(payload, process.env.JWT_SECRET, {
         subject: email,
-        expiresIn: process.env.JWT_EXPIRES_IN,
+        expiresIn: Number(process.env.JWT_EXPIRES_IN),
       });
     } catch (error) {
       console.log(error);
