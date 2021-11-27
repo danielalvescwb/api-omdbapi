@@ -62,7 +62,6 @@ export class RefreshTokenService {
     await this.usersRepository.update(user.primary_id, {
       refresh_token: refreshToken,
     });
-    console.log(user);
 
     return {
       token,
