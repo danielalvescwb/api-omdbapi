@@ -11,8 +11,6 @@ export class FavoritesShowController {
     const {
       tokenDecoded: { id },
     } = req;
-    console.log(id);
-
     return this.favoritesShowService.exec({ id });
   }
 }
