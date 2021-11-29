@@ -43,7 +43,7 @@ export class OAuthGithubCallbackService {
       );
 
       const { name, avatar_url, id, email } = githubUserInfo;
-      let user = await this.oAuthRepository.findOne({ where: { id } });
+      const user = await this.oAuthRepository.findOne({ where: { id } });
 
       const { refreshToken, token } =
         this.generateJwtAndRefreshTokenService.execute({
@@ -54,10 +54,17 @@ export class OAuthGithubCallbackService {
             avatar_url,
           },
         });
-      githubUserInfo.refresh_token = refreshToken;
 
       if (!user) {
-        user = await this.oAuthRepository.save(githubUserInfo);
+        await this.oAuthRepository.save({
+          ...githubUserInfo,
+          refresh_token: refreshToken,
+        });
+      } else {
+        await this.oAuthRepository.update(user.primary_id, {
+          ...githubUserInfo,
+          refresh_token: refreshToken,
+        });
       }
 
       return {

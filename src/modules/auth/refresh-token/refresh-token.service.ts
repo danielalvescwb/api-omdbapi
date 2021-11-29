@@ -20,7 +20,7 @@ export class RefreshTokenService {
   async exec({ sub, refreshTokenDTO }: IRefreshTokenService) {
     console.log('########## RefreshTokenService');
 
-    if (refreshTokenDTO.email !== sub) {
+    if (!sub) {
       throw new BadRequestException({
         error: true,
         code: 'credentials.invalid',
@@ -39,6 +39,12 @@ export class RefreshTokenService {
         code: 'request.invalid',
         message: 'User Not found',
       });
+
+    console.log(
+      'refreshTokenDTO.refreshToken !== user.refresh_token',
+      refreshTokenDTO.refreshToken,
+      user.refresh_token,
+    );
 
     if (refreshTokenDTO.refreshToken !== user.refresh_token) {
       throw new BadRequestException({
